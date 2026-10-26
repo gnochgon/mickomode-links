@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Micko | Futures Trader</title>
+<meta name="description" content="ES/NQ futures trader. 18 years of opening-range data, order flow and GEX. Videos, breakdowns and the tools I use.">
+<meta property="og:title" content="Micko | Futures Trader">
+<meta property="og:description" content="ES/NQ futures · opening-range data · order flow · GEX">
+<meta name="theme-color" content="#0B0D12">
+<link rel="icon" type="image/svg+xml" href="mark.svg">
+<style>
+  /* Self-hosted fonts: no third-party requests. */
+  @font-face { font-family: "Archivo"; src: url(fonts/archivo-var.woff2) format("woff2-variations"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
+  @font-face { font-family: "Inter"; src: url(fonts/inter-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Inter"; src: url(fonts/inter-500.woff2) format("woff2"); font-weight: 500; font-display: swap; }
+  @font-face { font-family: "Inter"; src: url(fonts/inter-600.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+  @font-face { font-family: "JBMono"; src: url(fonts/jbmono-600.woff2) format("woff2"); font-weight: 600; font-display: swap; }
+
+  :root {
+    --bg: #0B0D12; --surface: #151A22; --line: rgba(138,145,156,.22);
+    --ink: #E8EAED; --muted: #8A919C;
+    --orb: #FFE066; --gex: #4FD1E0; --of: #FF7A9E;
+  }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); }
+  body {
+    margin: 0; min-height: 100vh; color: var(--ink);
+    font: 16px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1;
+    background:
+      radial-gradient(ellipse 95vmax 80vmax at 0% 0%, rgba(58,74,94,.85) 0%, rgba(58,74,94,.3) 30%, rgba(58,74,94,0) 72%),
+      radial-gradient(ellipse 100vmax 85vmax at 100% 100%, rgba(20,35,58,1) 0%, rgba(20,35,58,.5) 40%, rgba(20,35,58,0) 80%),
+      var(--bg);
+  }
+  body::after {   /* desk grid, same as the cards */
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image: linear-gradient(rgba(232,234,237,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(232,234,237,.03) 1px, transparent 1px);
+    background-size: 54px 54px;
+  }
+  main { max-width: 520px; margin: 0 auto; padding: 48px 16px 40px; }
+
+  .head { text-align: center; }
+  .avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--line); display: block; margin: 0 auto 16px; }
+  .mark { width: 56px; height: 56px; margin: 0 auto 16px; display: block; }
+  h1 { margin: 0; font: 700 30px/1.15 "Archivo", sans-serif; letter-spacing: -.01em; }
+  h1 .k { font-weight: 900; font-stretch: 125%; }
+  .sub { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+  .pillars { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 18px 0 30px; }
+  .pill { font: 600 12px/1 "JBMono", ui-monospace, monospace; letter-spacing: .12em; padding: 8px 10px; border-radius: 8px; border: 1px solid; background: rgba(11,13,18,.6); }
+  .pill.orb { color: var(--orb); border-color: rgba(255,224,102,.45); }
+  .pill.gex { color: var(--gex); border-color: rgba(79,209,224,.45); }
+  .pill.of  { color: var(--of);  border-color: rgba(255,122,158,.45); }
+
+  .links { display: grid; gap: 12px; }
+  a.link {
+    display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--ink);
+    background: rgba(21,26,34,.92); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px;
+    transition: border-color .15s ease, transform .15s ease;
+  }
+  a.link:hover, a.link:focus-visible { border-color: rgba(232,234,237,.45); transform: translateY(-1px); outline: none; }
+  a.link.primary { border-color: rgba(79,209,224,.55); box-shadow: 0 0 28px rgba(79,209,224,.12); }
+  .ico { width: 40px; height: 40px; flex: none; border-radius: 10px; display: grid; place-items: center; background: rgba(232,234,237,.06); }
+  .ico svg { width: 20px; height: 20px; }
+  .txt { min-width: 0; flex: 1; }
+  .txt b { display: block; font-weight: 600; font-size: 16px; }
+  .txt span { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .arrow { color: var(--muted); flex: none; }
+
+  .social { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; }
+  .social a { font: 600 12px/1 "JBMono", ui-monospace, monospace; letter-spacing: .1em; color: var(--muted); text-decoration: none;
+              padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+  .social a:hover, .social a:focus-visible { color: var(--ink); border-color: rgba(232,234,237,.45); outline: none; }
+
+  footer { margin-top: 40px; text-align: center; color: rgba(138,145,156,.8); font-size: 12.5px; }
+  footer .h { font: 600 11px/1 "JBMono", monospace; letter-spacing: .3em; display: block; margin-bottom: 8px; color: var(--muted); }
+  @media (prefers-reduced-motion: reduce) { a.link { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <div class="head">
+    <!-- Profile photo: drop the same photo as on X/Instagram next to this file as avatar.jpg (square, 400px+). -->
+    <img class="avatar" src="avatar.jpg" alt="Micko" width="96" height="96"
+         onerror="this.replaceWith(Object.assign(document.createElement('img'),{src:'mark.svg',className:'mark',alt:''}))">
+    <h1>Micko <span style="color:var(--muted);font-weight:400">|</span> Futures Trader</h1>
+    <p class="sub">ES/NQ · 18 years of opening-range data, order flow &amp; GEX</p>
+    <div class="pillars" aria-label="Topics">
+      <span class="pill orb">ORB</span><span class="pill gex">GEX</span><span class="pill of">ORDER FLOW</span>
+    </div>
+  </div>
+
+  <!-- Links: edit here. data-id is the name used for click counts (?ref=… on our own pages, utm on others). -->
+  <nav class="links" aria-label="Links">
+    <a class="link primary" data-id="youtube" href="https://www.youtube.com/@mickomodee?sub_confirmation=1">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#E8EAED" stroke-width="1.8" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.2v5.6l4.8-2.8z" fill="#E8EAED"/></svg></span>
+      <span class="txt"><b>YouTube channel</b><span>Long-form breakdowns: GEX series, ORB data, live reads</span></span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a>
+    <a class="link" data-id="latest-video" href="https://youtu.be/pMG0Y01we_o">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#E8EAED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l5-6 4 3.5L20 6"/><path d="M15 6h5v5"/></svg></span>
+      <span class="txt"><b>Latest video</b><span>The newest upload</span></span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a>
+    <a class="link" data-id="chronvel" href="https://chronvel.com/?utm_source=mickomode&amp;utm_medium=links&amp;utm_campaign=bio">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#E8EAED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 8.5h8M8 12h8M8 15.5h5"/></svg></span>
+      <span class="txt"><b>Chronvel, the trading journal I built</b><span>Full disclosure: it's my product</span></span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a>
+  </nav>
+
+  <div class="social" aria-label="Social">
+    <a data-id="x" href="https://x.com/mickomode">X</a>
+    <a data-id="instagram" href="https://www.instagram.com/mickomodes/">INSTAGRAM</a>
+    <a data-id="tiktok" href="https://www.tiktok.com/@mickomodes">TIKTOK</a>
+  </div>
+
+  <footer>
+    <span class="h">@MICKOMODE</span>
+    Education only · not financial advice
+  </footer>
+</main>
+<script>
+  // Tag outbound links with where the visit came from (?ref=x / ?ref=ig / ?ref=tt on this page's URL),
+  // so destination analytics (YouTube, Chronvel) can tell the platforms apart. No tracking requests are made here.
+  (function () {
+    try {
+      var ref = new URLSearchParams(location.search).get('ref');
+      if (!ref || !/^[a-z0-9_-]{1,20}$/i.test(ref)) return;
+      document.querySelectorAll('a[href*="utm_source="]').forEach(function (a) {
+        var u = new URL(a.href); u.searchParams.set('utm_content', ref); a.href = u.toString();
+      });
+    } catch (e) {}
+  })();
+</script>
+</body>
+</html>
