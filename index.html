@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Micko | Futures Trader</title>
-<meta name="description" content="ES/NQ futures trader. 18 years of opening-range data, order flow and GEX. Videos, breakdowns and the tools I use.">
+<meta name="description" content="ES/NQ futures trader. 18 years of opening-range data, GEX and order flow. Videos, breakdowns and the tools I use.">
 <meta property="og:title" content="Micko | Futures Trader">
-<meta property="og:description" content="ES/NQ futures · opening-range data · order flow · GEX">
+<meta property="og:description" content="ES/NQ futures · opening-range data · GEX · order flow">
+<meta property="og:image" content="https://mickomode.com/photos/hero.jpg">
 <meta name="theme-color" content="#0B0D12">
 <link rel="icon" type="image/svg+xml" href="mark.svg">
 <style>
-  /* Self-hosted fonts: no third-party requests. */
   @font-face { font-family: "Archivo"; src: url(fonts/archivo-var.woff2) format("woff2-variations"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
   @font-face { font-family: "Inter"; src: url(fonts/inter-400.woff2) format("woff2"); font-weight: 400; font-display: swap; }
   @font-face { font-family: "Inter"; src: url(fonts/inter-500.woff2) format("woff2"); font-weight: 500; font-display: swap; }
@@ -20,121 +20,246 @@
   :root {
     --bg: #0B0D12; --surface: #151A22; --line: rgba(138,145,156,.22);
     --ink: #E8EAED; --muted: #8A919C;
-    --orb: #FFE066; --gex: #4FD1E0; --of: #FF7A9E;
+    --orb: #FFE066; --gex: #4FD1E0; --of: #FF7A9E; --live: #3FA66B;
   }
   * { box-sizing: border-box; }
   html { background: var(--bg); }
-  body {
-    margin: 0; min-height: 100vh; color: var(--ink);
-    font: 16px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-    -webkit-font-smoothing: antialiased;
-  }
-  body::before {
-    content: ""; position: fixed; inset: 0; z-index: -1;
-    background:
-      radial-gradient(ellipse 95vmax 80vmax at 0% 0%, rgba(58,74,94,.85) 0%, rgba(58,74,94,.3) 30%, rgba(58,74,94,0) 72%),
-      radial-gradient(ellipse 100vmax 85vmax at 100% 100%, rgba(20,35,58,1) 0%, rgba(20,35,58,.5) 40%, rgba(20,35,58,0) 80%),
-      var(--bg);
-  }
-  body::after {   /* desk grid, same as the cards */
-    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-    background-image: linear-gradient(rgba(232,234,237,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(232,234,237,.03) 1px, transparent 1px);
-    background-size: 54px 54px;
-  }
-  main { max-width: 520px; margin: 0 auto; padding: 48px 16px 40px; }
+  body { margin: 0; min-height: 100vh; color: var(--ink); overflow-x: hidden;
+         font: 16px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
 
-  .head { text-align: center; }
-  .avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--line); display: block; margin: 0 auto 16px; }
-  .mark { width: 56px; height: 56px; margin: 0 auto 16px; display: block; }
+  /* ---- living background: two brand glows that drift slowly + desk grid ---- */
+  .field { position: fixed; inset: -20%; z-index: -2; pointer-events: none;
+    background:
+      radial-gradient(40% 35% at 20% 15%, rgba(58,74,94,.9), rgba(58,74,94,0) 70%),
+      radial-gradient(45% 40% at 85% 90%, rgba(20,35,58,1), rgba(20,35,58,0) 75%),
+      radial-gradient(25% 22% at 75% 25%, rgba(79,209,224,.10), rgba(79,209,224,0) 70%),
+      var(--bg);
+    animation: drift 26s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: translate3d(-2%, -1%, 0) scale(1); } to { transform: translate3d(2%, 2%, 0) scale(1.06); } }
+  .grid { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image: linear-gradient(rgba(232,234,237,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(232,234,237,.03) 1px, transparent 1px);
+    background-size: 54px 54px; mask-image: linear-gradient(#000 0%, rgba(0,0,0,.4) 100%); }
+  canvas#tape { position: fixed; left: 0; right: 0; bottom: 0; height: 38vh; width: 100%; z-index: -1; opacity: .5; pointer-events: none; }
+
+  main { max-width: 540px; margin: 0 auto; padding: 0 16px 40px; }
+
+  /* ---- hero photo (photos/hero.jpg); hidden if missing ---- */
+  .hero { position: relative; margin: 0 -16px; height: 300px; overflow: hidden; }
+  .hero img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.04); animation: kenburns 30s ease-in-out infinite alternate; }
+  @keyframes kenburns { from { transform: scale(1.04) translateY(0); } to { transform: scale(1.12) translateY(-12px); } }
+  .hero::after { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(11,13,18,.15) 0%, rgba(11,13,18,.35) 55%, var(--bg) 100%); }
+  .hero.empty { display: none; }
+
+  .head { text-align: center; position: relative; margin-top: -52px; }
+  .hero.empty + .head { margin-top: 0; padding-top: 48px; }
+  .avatar { width: 104px; height: 104px; border-radius: 50%; object-fit: cover; display: block; margin: 0 auto 14px;
+            border: 3px solid var(--bg); box-shadow: 0 0 0 1.5px rgba(232,234,237,.25), 0 10px 40px rgba(0,0,0,.6); background: var(--surface); }
   h1 { margin: 0; font: 700 30px/1.15 "Archivo", sans-serif; letter-spacing: -.01em; }
-  h1 .k { font-weight: 900; font-stretch: 125%; }
-  .sub { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
-  .pillars { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 18px 0 30px; }
-  .pill { font: 600 12px/1 "JBMono", ui-monospace, monospace; letter-spacing: .12em; padding: 8px 10px; border-radius: 8px; border: 1px solid; background: rgba(11,13,18,.6); }
+  h1 .bar { color: var(--muted); font-weight: 400; }
+  .sub { margin: 6px 0 0; color: rgba(232,234,237,.75); font-size: 15px; }
+
+  /* ---- live market status ---- */
+  .status { display: inline-flex; align-items: center; gap: 10px; margin: 16px auto 0; padding: 9px 14px; border-radius: 999px;
+            background: rgba(21,26,34,.85); border: 1px solid var(--line); font: 600 12px/1.2 "JBMono", ui-monospace, monospace;
+            letter-spacing: .06em; color: var(--ink); backdrop-filter: blur(6px); white-space: nowrap; max-width: 100%; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; position: relative; }
+  .dot.on { background: var(--live); }
+  .dot.on::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--live); opacity: 0; animation: ping 1.8s ease-out infinite; }
+  .dot.orb { background: var(--orb); } .dot.orb::after { border-color: var(--orb); }
+  @keyframes ping { 0% { transform: scale(.4); opacity: .9; } 100% { transform: scale(1.6); opacity: 0; } }
+  .status .t { color: var(--muted); }
+
+  .pillars { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin: 14px 0 26px; }
+  .pill { font: 600 11.5px/1 "JBMono", ui-monospace, monospace; letter-spacing: .12em; padding: 7px 9px; border-radius: 8px; border: 1px solid; background: rgba(11,13,18,.55); }
   .pill.orb { color: var(--orb); border-color: rgba(255,224,102,.45); }
   .pill.gex { color: var(--gex); border-color: rgba(79,209,224,.45); }
   .pill.of  { color: var(--of);  border-color: rgba(255,122,158,.45); }
 
+  /* ---- cards ---- */
   .links { display: grid; gap: 12px; }
-  a.link {
+  a.link { --glow: rgba(232,234,237,.35);
     display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--ink);
-    background: rgba(21,26,34,.92); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px;
-    transition: border-color .15s ease, transform .15s ease;
-  }
-  a.link:hover, a.link:focus-visible { border-color: rgba(232,234,237,.45); transform: translateY(-1px); outline: none; }
-  a.link.primary { border-color: rgba(79,209,224,.55); box-shadow: 0 0 28px rgba(79,209,224,.12); }
-  .ico { width: 40px; height: 40px; flex: none; border-radius: 10px; display: grid; place-items: center; background: rgba(232,234,237,.06); }
-  .ico svg { width: 20px; height: 20px; }
+    background: rgba(21,26,34,.88); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px;
+    backdrop-filter: blur(6px); transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+  a.link:hover, a.link:focus-visible { border-color: var(--glow); transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,.35), 0 0 24px color-mix(in srgb, var(--glow) 25%, transparent); outline: none; }
+  a.link:active { transform: translateY(0) scale(.99); }
+  .ico { width: 44px; height: 44px; flex: none; border-radius: 12px; display: grid; place-items: center; background: rgba(232,234,237,.06); }
+  .ico svg { width: 22px; height: 22px; }
+  .ico img { width: 44px; height: 44px; border-radius: 12px; display: block; }
+  .code { font: 600 12.5px/1 "JBMono", monospace; letter-spacing: .08em; color: var(--ink); background: rgba(232,234,237,.08); border: 1px dashed rgba(232,234,237,.35); padding: 3px 6px; border-radius: 6px; }
   .txt { min-width: 0; flex: 1; }
   .txt b { display: block; font-weight: 600; font-size: 16px; }
-  .txt span { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
-  .arrow { color: var(--muted); flex: none; }
+  .txt > span { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .txt .code { display: inline-block; margin: 0 2px; }
+  .arrow { color: var(--muted); flex: none; transition: transform .2s ease, color .2s ease; }
+  a.link:hover .arrow { transform: translateX(3px); color: var(--ink); }
 
-  .social { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 26px 0 0; }
-  .social a { font: 600 12px/1 "JBMono", ui-monospace, monospace; letter-spacing: .1em; color: var(--muted); text-decoration: none;
-              padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
-  .social a:hover, .social a:focus-visible { color: var(--ink); border-color: rgba(232,234,237,.45); outline: none; }
+  /* featured video card */
+  a.video { display: block; padding: 0; overflow: hidden; --glow: rgba(255,0,0,.55); }
+  .thumb { position: relative; aspect-ratio: 16/9; background: #000; overflow: hidden; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s ease; }
+  a.video:hover .thumb img { transform: scale(1.04); }
+  .play { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,.55)); }
+  .play svg { width: 64px; height: 64px; filter: drop-shadow(0 6px 18px rgba(0,0,0,.6)); transition: transform .2s ease; }
+  a.video:hover .play svg { transform: scale(1.08); }
+  .badge { position: absolute; top: 12px; left: 12px; font: 600 11px/1 "JBMono", monospace; letter-spacing: .14em; color: var(--ink);
+           background: rgba(11,13,18,.75); border: 1px solid var(--line); padding: 7px 9px; border-radius: 8px; }
+  .dur { position: absolute; right: 10px; bottom: 10px; font: 600 12px/1 "JBMono", monospace; background: rgba(0,0,0,.75); padding: 5px 7px; border-radius: 6px; }
+  .vmeta { padding: 14px 16px; }
+  .vmeta b { display: block; font-weight: 600; font-size: 16px; }
+  .vmeta span { display: block; color: var(--muted); font-size: 13.5px; margin-top: 2px; }
 
-  footer { margin-top: 40px; text-align: center; color: rgba(138,145,156,.8); font-size: 12.5px; }
+  /* ---- photo strip (photos/1.jpg … 4.jpg); missing ones are removed ---- */
+  .strip-h { margin: 30px 0 10px; font: 600 11px/1 "JBMono", monospace; letter-spacing: .3em; color: var(--muted); }
+  .strip { display: grid; grid-auto-flow: column; grid-auto-columns: 62%; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: none; }
+  .strip::-webkit-scrollbar { display: none; }
+  .strip img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 14px; border: 1px solid var(--line); scroll-snap-align: start; display: block; }
+
+  /* ---- socials with real logos ---- */
+  .social { display: flex; justify-content: center; gap: 12px; margin: 30px 0 0; }
+  .social a { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; background: rgba(21,26,34,.88);
+              border: 1px solid var(--line); transition: transform .2s ease, border-color .2s ease; }
+  .social a:hover, .social a:focus-visible { transform: translateY(-3px); border-color: rgba(232,234,237,.45); outline: none; }
+  .social svg { width: 22px; height: 22px; }
+
+  footer { margin-top: 36px; text-align: center; color: rgba(138,145,156,.85); font-size: 12.5px; }
   footer .h { font: 600 11px/1 "JBMono", monospace; letter-spacing: .3em; display: block; margin-bottom: 8px; color: var(--muted); }
-  @media (prefers-reduced-motion: reduce) { a.link { transition: none; } }
+
+  /* entrance */
+  .in { opacity: 0; transform: translateY(12px); animation: up .6s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes up { to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    .field, .hero img, .dot.on::after { animation: none; }
+    .in { animation: none; opacity: 1; transform: none; }
+    canvas#tape { display: none; }
+  }
 </style>
 </head>
 <body>
+<div class="field"></div><div class="grid"></div><canvas id="tape" aria-hidden="true"></canvas>
 <main>
-  <div class="head">
-    <!-- Profile photo: drop the same photo as on X/Instagram next to this file as avatar.jpg (square, 400px+). -->
-    <img class="avatar" src="avatar.jpg" alt="Micko" width="96" height="96"
-         onerror="this.replaceWith(Object.assign(document.createElement('img'),{src:'mark.svg',className:'mark',alt:''}))">
-    <h1>Micko <span style="color:var(--muted);font-weight:400">|</span> Futures Trader</h1>
-    <p class="sub">ES/NQ · 18 years of opening-range data, order flow &amp; GEX</p>
-    <div class="pillars" aria-label="Topics">
-      <span class="pill orb">ORB</span><span class="pill gex">GEX</span><span class="pill of">ORDER FLOW</span>
-    </div>
+  <!-- Real photos: photos/hero.jpg (wide, 1600px+), photos/avatar.jpg (square), photos/1.jpg … photos/4.jpg (portrait 4:5). Missing files simply don't show. -->
+  <div class="hero"><img src="photos/hero.jpg" alt="" onerror="this.parentNode.classList.add('empty')"></div>
+
+  <div class="head in" style="animation-delay:.05s">
+    <img class="avatar" src="photos/avatar.jpg" alt="Micko" width="104" height="104" onerror="this.onerror=null;this.src='mark.svg'">
+    <h1>Micko <span class="bar">|</span> Futures Trader</h1>
+    <p class="sub">ES/NQ · 18 years of opening-range data, GEX &amp; order flow</p>
+    <div class="status" id="status" aria-live="polite"><span class="dot" id="dot"></span><span id="st">ES / NQ</span><span class="t" id="clock"></span></div>
+    <div class="pillars"><span class="pill orb">ORB</span><span class="pill gex">GEX</span><span class="pill of">ORDER FLOW</span></div>
   </div>
 
-  <!-- Links: edit here. data-id is the name used for click counts (?ref=… on our own pages, utm on others). -->
   <nav class="links" aria-label="Links">
-    <a class="link primary" data-id="youtube" href="https://www.youtube.com/@mickomodee?sub_confirmation=1">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#E8EAED" stroke-width="1.8" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="4"/><path d="M10 9.2v5.6l4.8-2.8z" fill="#E8EAED"/></svg></span>
+    <!-- Latest video: the daily task can rewrite VIDEO_ID / title / duration below. -->
+    <a class="link video in" style="animation-delay:.12s" data-id="latest-video" href="https://youtu.be/pMG0Y01we_o">
+      <div class="thumb">
+        <img src="https://i.ytimg.com/vi/pMG0Y01we_o/hqdefault.jpg" alt="" loading="lazy">
+        <span class="badge">LATEST VIDEO</span>
+        <div class="play"><svg viewBox="0 0 24 24"><path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/><path fill="#fff" d="M9.6 15.6V8.4l6.3 3.6z"/></svg></div>
+        <span class="dur">11:21</span>
+      </div>
+      <div class="vmeta"><b>How to Read Gamma Exposure (GEX) for Futures Trading</b><span>Watch on YouTube</span></div>
+    </a>
+
+    <a class="link in" style="animation-delay:.18s;--glow:rgba(255,0,0,.55)" data-id="youtube" href="https://www.youtube.com/@mickomodee?sub_confirmation=1">
+      <span class="ico"><svg viewBox="0 0 24 24"><path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></span>
       <span class="txt"><b>YouTube channel</b><span>Long-form breakdowns: GEX series, ORB data, live reads</span></span>
       <span class="arrow" aria-hidden="true">→</span>
     </a>
-    <a class="link" data-id="latest-video" href="https://youtu.be/pMG0Y01we_o">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#E8EAED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18l5-6 4 3.5L20 6"/><path d="M15 6h5v5"/></svg></span>
-      <span class="txt"><b>Latest video</b><span>The newest upload</span></span>
+
+    <a class="link in" style="animation-delay:0.21s;--glow:rgba(79,209,224,.6)" data-id="quantedoptions" href="https://www.quantedoptions.com/?ref=micko" rel="sponsored noopener">
+      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#4FD1E0" stroke-width="1.9" stroke-linecap="round"><path d="M4 20V10M8 20V4M12 20v-7M16 20V8M20 20v-4"/></svg></span>
+      <span class="txt"><b>quantedOptions · my GEX tool</b><span>Code <span class="code">MICKO</span> at checkout for a discount · affiliate link</span></span>
       <span class="arrow" aria-hidden="true">→</span>
     </a>
-    <a class="link" data-id="chronvel" href="https://chronvel.com/?utm_source=mickomode&amp;utm_medium=links&amp;utm_campaign=bio">
-      <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#E8EAED" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="16" height="17" rx="3"/><path d="M8 8.5h8M8 12h8M8 15.5h5"/></svg></span>
-      <span class="txt"><b>Chronvel, the trading journal I built</b><span>Full disclosure: it's my product</span></span>
+    <a class="link in" style="animation-delay:0.24s;--glow:rgba(212,165,90,.6)" data-id="chronvel" href="https://www.chronvel.com/?ref=micko&amp;utm_source=mickomode&amp;utm_medium=links&amp;utm_campaign=bio">
+      <span class="ico"><img src="icons/chronvel.png" alt=""></span>
+      <span class="txt"><b>Chronvel · the journal I built</b><span>Code <span class="code">MICKO</span> at checkout for a discount · it's my product</span></span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </a>
+    <a class="link in" style="animation-delay:0.27s;--glow:rgba(88,101,242,.65)" data-id="discord" href="https://discord.com/invite/rt6CV2RrEh">
+      <span class="ico"><svg viewBox="0 0 24 24"><path fill="#5865F2" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></span>
+      <span class="txt"><b>Discord · bring your charts</b><span>Free · chart reviews, GEX &amp; ORB questions, trade talk</span></span>
       <span class="arrow" aria-hidden="true">→</span>
     </a>
   </nav>
 
-  <div class="social" aria-label="Social">
-    <a data-id="x" href="https://x.com/mickomode">X</a>
-    <a data-id="instagram" href="https://www.instagram.com/mickomodes/">INSTAGRAM</a>
-    <a data-id="tiktok" href="https://www.tiktok.com/@mickomodes">TIKTOK</a>
+  <div class="strip-h in" id="striph" style="animation-delay:.3s">FROM THE DESK</div>
+  <div class="strip in" id="strip" style="animation-delay:.32s">
+    <img src="photos/1.jpg" alt="" loading="lazy" onerror="this.remove()">
+    <img src="photos/2.jpg" alt="" loading="lazy" onerror="this.remove()">
+    <img src="photos/3.jpg" alt="" loading="lazy" onerror="this.remove()">
+    <img src="photos/4.jpg" alt="" loading="lazy" onerror="this.remove()">
   </div>
 
-  <footer>
+  <div class="social in" style="animation-delay:.38s" aria-label="Social">
+    <a data-id="x" href="https://x.com/mickomode" aria-label="X"><svg viewBox="0 0 24 24"><path fill="#E8EAED" d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z"/></svg></a>
+    <a data-id="instagram" href="https://www.instagram.com/mickomodes/" aria-label="Instagram"><svg viewBox="0 0 24 24"><path fill="#FF0069" d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077"/></svg></a>
+    <a data-id="tiktok" href="https://www.tiktok.com/@mickomodes" aria-label="TikTok"><svg viewBox="0 0 24 24"><path fill="#E8EAED" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></a>
+    <a data-id="youtube-icon" href="https://www.youtube.com/@mickomodee" aria-label="YouTube"><svg viewBox="0 0 24 24"><path fill="#FF0000" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+    <a data-id="discord-icon" href="https://discord.com/invite/rt6CV2RrEh" aria-label="Discord"><svg viewBox="0 0 24 24"><path fill="#5865F2" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></svg></a>
+  </div>
+
+  <footer class="in" style="animation-delay:.44s">
     <span class="h">@MICKOMODE</span>
     Education only · not financial advice
   </footer>
 </main>
 <script>
-  // Tag outbound links with where the visit came from (?ref=x / ?ref=ig / ?ref=tt on this page's URL),
-  // so destination analytics (YouTube, Chronvel) can tell the platforms apart. No tracking requests are made here.
-  (function () {
-    try {
-      var ref = new URLSearchParams(location.search).get('ref');
-      if (!ref || !/^[a-z0-9_-]{1,20}$/i.test(ref)) return;
-      document.querySelectorAll('a[href*="utm_source="]').forEach(function (a) {
-        var u = new URL(a.href); u.searchParams.set('utm_content', ref); a.href = u.toString();
-      });
-    } catch (e) {}
-  })();
+(function () {
+  // ---- live ES/NQ session status, computed in New York time (CME Globex: Sun 18:00 – Fri 17:00 ET,
+  // daily break 17:00–18:00; RTH 9:30–16:00; the 1-hour opening range is 9:30–10:25). Exchange holidays aren't modelled.
+  var st = document.getElementById('st'), clock = document.getElementById('clock'), dot = document.getElementById('dot');
+  function ny() {
+    var p = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());
+    var o = {}; p.forEach(function (x) { o[x.type] = x.value; });
+    return { d: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(o.weekday), m: (+o.hour) * 60 + (+o.minute), hm: o.hour + ':' + o.minute };
+  }
+  function left(min) { var h = Math.floor(min / 60), m = min % 60; return (h ? h + 'h ' : '') + m + 'm'; }
+  function tick() {
+    var t = ny(), d = t.d, m = t.m, wk = d >= 1 && d <= 5, text, cls = '';
+    var globex = (d === 0 && m >= 1080) || (d >= 1 && d <= 4 && !(m >= 1020 && m < 1080)) || (d === 5 && m < 1020);
+    if (wk && m >= 570 && m < 625) { text = 'OPENING RANGE · ' + left(625 - m) + ' left'; cls = 'orb'; }
+    else if (wk && m >= 625 && m < 960) { text = 'NY OPEN · ' + left(960 - m) + ' left'; cls = 'on'; }
+    else if (wk && m >= 360 && m < 570) { text = 'PREMARKET · NY in ' + left(570 - m); cls = 'on'; }
+    else if (wk && m >= 960 && m < 1020 && d !== 5) { text = 'AFTER HOURS'; cls = 'on'; }
+    else if (globex) { text = 'OVERNIGHT · Globex open'; cls = 'on'; }
+    else if (d === 5 && m >= 1020 || d === 6 || (d === 0 && m < 1080)) { text = 'WEEKEND · back Sun 18:00'; }
+    else { text = 'DAILY BREAK · back 18:00'; }
+    st.textContent = text; clock.textContent = t.hm + ' ET'; dot.className = 'dot ' + cls;
+  }
+  tick(); setInterval(tick, 15000);
+
+  // ---- remove the photo section if no photos loaded ----
+  setTimeout(function () { if (!document.querySelector('#strip img')) { document.getElementById('strip').remove(); document.getElementById('striph').remove(); } }, 2500);
+
+  // ---- ?ref=x|ig|tt is passed on to our own tagged links, so destination analytics can split platforms ----
+  try {
+    var ref = new URLSearchParams(location.search).get('ref');
+    if (ref && /^[a-z0-9_-]{1,20}$/i.test(ref)) document.querySelectorAll('a[href*="utm_source="]').forEach(function (a) { var u = new URL(a.href); u.searchParams.set('utm_content', ref); a.href = u.toString(); });
+  } catch (e) {}
+
+  // ---- the tape: a faint, slowly scrolling candle line along the bottom (texture, not data) ----
+  var cv = document.getElementById('tape'); if (!cv || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var cx = cv.getContext('2d'), W, H, dpr = Math.min(2, devicePixelRatio || 1), bars = [], s = 11, v = 0, off = 0;
+  function rnd() { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }
+  function add() { var o = v; v += (rnd() - .48) * 2.2 + Math.sin(bars.length / 9) * .5; bars.push([o, v, Math.max(o, v) + rnd() * 1.2, Math.min(o, v) - rnd() * 1.2]); }
+  function size() { W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0); }
+  size(); addEventListener('resize', size); for (var i = 0; i < 120; i++) add();
+  function draw() {
+    cx.clearRect(0, 0, W, H); var bw = 14, n = Math.ceil(W / bw) + 2, seg = bars.slice(-n);
+    var hi = Math.max.apply(null, seg.map(function (b) { return b[2]; })), lo = Math.min.apply(null, seg.map(function (b) { return b[3]; }));
+    var Y = function (q) { return H * .15 + (hi - q) / (hi - lo || 1) * H * .7; };
+    seg.forEach(function (b, k) { var x = k * bw - off; cx.globalAlpha = .12 + .1 * (k / n); cx.strokeStyle = cx.fillStyle = '#E8EAED';
+      cx.beginPath(); cx.moveTo(x + 5, Y(b[2])); cx.lineTo(x + 5, Y(b[3])); cx.lineWidth = 1.2; cx.stroke();
+      var t = Y(Math.max(b[0], b[1])), h = Math.max(2, Y(Math.min(b[0], b[1])) - t);
+      if (b[1] >= b[0]) cx.fillRect(x + 1, t, 8, h); else cx.strokeRect(x + 1.5, t, 7, h); });
+    off += .12; if (off >= bw) { off = 0; add(); if (bars.length > 600) bars.splice(0, 300); }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
 </script>
 </body>
 </html>
